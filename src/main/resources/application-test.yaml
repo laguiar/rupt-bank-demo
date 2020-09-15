@@ -1,0 +1,5 @@
+spring:
+    datasource:
+        url: 'jdbc:h2:mem:rupt_bank_test;MODE=PostgreSQL'
+        username: 'sa'
+        password: ''
