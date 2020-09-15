@@ -27,6 +27,10 @@ class AccountHandler(
         AccountType.PRIVATE_LOAN to setOf(DEPOSIT, TRANSFER_IN)
     )
 
+    /**
+     * Creates a new account for a given customer
+     * Iban value is randomly generated
+     */
     @Transactional
     fun createAccount(form: AccountForm): Mono<ServerResponse> =
         when (customerRepository.existsById(form.customerId)) {
@@ -49,6 +53,7 @@ class AccountHandler(
     @Transactional(isolation = Isolation.READ_COMMITTED)
     fun deposit(iban: String, form: DepositForm): Mono<ServerResponse> =
         repository.findByIban(iban)?.let { account ->
+            // verify if account can perform the transaction type
             when (account.isCapableOf(DEPOSIT)) {
                 true -> {
                     val updatedAccount = repository.save(
@@ -130,6 +135,9 @@ class AccountHandler(
             false -> ServerResponse.ok().bodyValue(repository.findAll().map(Account::toDto))
         }
 
+    /**
+     * List all transactions made by an account and the ones that account was the payee
+     */
     @Transactional(readOnly = true)
     fun listAccountTransactions(request: ServerRequest): Mono<ServerResponse> =
         repository.findByIban(request.pathVariable("iban"))?.let { account ->
@@ -141,6 +149,9 @@ class AccountHandler(
         } ?: ServerResponse.notFound().build()
 
 
+    /**
+     * Update the current lock state of an account by inverting it
+     */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     fun changeLockState(request: ServerRequest): Mono<ServerResponse> =
         repository.findByIban(request.pathVariable("iban"))?.let { account ->
