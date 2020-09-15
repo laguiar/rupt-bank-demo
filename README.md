@@ -1,3 +1,6 @@
+![Gradle tests](https://github.com/laguiar/rupt-bank-demo/workflows/Gradle%20tests/badge.svg)
+
+
 ## Rupt Bank Demo
 
 **Rupt Bank Demo** is a small project covering just few scenarios of a bank account.
