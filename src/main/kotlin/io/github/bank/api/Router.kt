@@ -29,7 +29,7 @@ class ApplicationRouter(private val accountHandler: AccountHandler) {
 
                     POST("/{iban}/deposit") { request ->
                         request.bodyToMono(DepositForm::class.java).flatMap { form ->
-                            accountHandler.deposit(request.pathVariable("iban"), form)
+                            accountHandler.deposit(request, form)
                         }.switchIfEmpty(ServerResponse.badRequest().build())
                     }
 

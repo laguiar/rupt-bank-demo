@@ -17,7 +17,8 @@ import reactor.core.publisher.Mono
 class AccountHandler(
     private val repository: AccountRepository,
     private val transactionRepository: AccountTransactionRepository,
-    private val customerRepository: CustomerRepository
+    private val customerRepository: CustomerRepository,
+    private val finder: AccountFinder
 ) {
 
     // TODO move it to properties file
@@ -51,8 +52,8 @@ class AccountHandler(
         }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    fun deposit(iban: String, form: DepositForm): Mono<ServerResponse> =
-        repository.findByIban(iban)?.let { account ->
+    fun deposit(request: ServerRequest, form: DepositForm): Mono<ServerResponse> =
+        finder.findAccountFromRequest(request) { account ->
             // verify if account can perform the transaction type
             when (account.isCapableOf(DEPOSIT)) {
                 true -> {
@@ -71,15 +72,14 @@ class AccountHandler(
 
                 false -> ServerResponse.status(HttpStatus.FORBIDDEN).build()
             }
-
-        } ?: ServerResponse.notFound().build()
+        }
 
 
     @Transactional(readOnly = true)
     fun getAccount(request: ServerRequest): Mono<ServerResponse> =
-        repository.findByIban(request.pathVariable("iban"))?.let { account ->
+        finder.findAccountFromRequest(request) { account ->
             ServerResponse.ok().bodyValue(account.toDto())
-        } ?: ServerResponse.notFound().build()
+        }
 
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -92,12 +92,14 @@ class AccountHandler(
 
         // check if both accounts are capable of transfers
         if (accountOut.isCapableOf(TRANSFER_OUT).not()
-            || accountIn.isCapableOf(TRANSFER_IN).not())
+            || accountIn.isCapableOf(TRANSFER_IN).not()
+        )
             return ServerResponse.status(HttpStatus.FORBIDDEN).build()
 
         // check if a saving account is transferring to its checking account
         if (accountOut.type == AccountType.SAVINGS
-            && accountIn.savingAccount?.iban != accountOut.iban)
+            && accountIn.savingAccount?.iban != accountOut.iban
+        )
             return ServerResponse.status(HttpStatus.UNPROCESSABLE_ENTITY).build()
 
         // negative balance is not being considered
@@ -140,13 +142,13 @@ class AccountHandler(
      */
     @Transactional(readOnly = true)
     fun listAccountTransactions(request: ServerRequest): Mono<ServerResponse> =
-        repository.findByIban(request.pathVariable("iban"))?.let { account ->
+        finder.findAccountFromRequest(request) { account ->
             val transactions = transactionRepository.findAllByAccount(account)
             val payeeTransactions = transactionRepository.findAllByPayee(account.iban)
             val result = transactions.plus(payeeTransactions).sortedByDescending { it.createdAt }
 
             ServerResponse.ok().bodyValue(result)
-        } ?: ServerResponse.notFound().build()
+        }
 
 
     /**
@@ -154,11 +156,11 @@ class AccountHandler(
      */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     fun changeLockState(request: ServerRequest): Mono<ServerResponse> =
-        repository.findByIban(request.pathVariable("iban"))?.let { account ->
+        finder.findAccountFromRequest(request) { account ->
             val updated = account.copy(locked = account.isLocked().not())
             repository.save(updated)
 
             ServerResponse.ok().bodyValue(LockedDto(locked = updated.isLocked()))
-        } ?: ServerResponse.notFound().build()
+        }
 
 }
