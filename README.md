@@ -6,8 +6,10 @@
 **Rupt Bank Demo** is a small project covering just few scenarios of a bank account.
 
 It's a Spring WebFlux + JPA + Kotlin project.
-<p></br></p>
-      
+
+
+### API
+
 Functionalities exposed under ```/api/v1/accounts```:
  
 ```GET("")```: List all accounts, it's possible to filter the results using ```?type=VALUE1,VALUE2```.
@@ -22,34 +24,32 @@ Functionalities exposed under ```/api/v1/accounts```:
 
 ```PUT("/{iban}/locker")```: Perform a lock/unlock operation on the given Account, depending on the current lock state.
 
-<p></br></p>
+_ps: Spring WebFlux Functional Router is not compatible yet with Swagger/OpenAPI_
 
----
 
-#### Docker Image
+### Docker Image
 To create and push docker image a register:
-```
-./gradlew jib --image=registry.hub.docker.com/<your-docker-user>/rupt-bank-demo
-```
+
+      ./gradlew jib --image=registry.hub.docker.com/<your-docker-user>/rupt-bank-demo
+
 You can use Google GCR or Amazon ECR as you wish, just change the image path and have the credentials properly setting up on your environment.
 
 To generate an image to a Docker daemon, to run/test locally:
 
-```./gradlew jibDockerBuild```
+    ./gradlew jibDockerBuild
 
-<p></br></p>
 
-#### Running it locally:
+### Running locally
 
 To quickly try it out, run the project with an embedded H2 database:
 
-```./gradlew bootRun --args='--spring.profiles.active=h2'``` 
+      ./gradlew bootRun --args='--spring.profiles.active=h2'
 
 To do some development, the recommendation is to have a Postgres running locally.
 
 If so, just run the application without any parameter:
 
-```./gradlew bootRun```
+      ./gradlew bootRun
 
 
 Alternatively, Postgres can be setup to run on docker:
@@ -61,8 +61,7 @@ docker exec -i postgres psql -U postgres -c "CREATE DATABASE rupt-bank WITH ENCO
 
 Another alternative is to run the application with an H2 database instead of using Postgres.
 
-<p></br></p>
 
-#### Running the tests:
+### Running tests
 
-```./gradlew clean test```
+      ./gradlew clean test
