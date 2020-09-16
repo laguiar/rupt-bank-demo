@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.test.web.reactive.server.expectBodyList
 import java.math.BigDecimal
 import java.util.*
 
@@ -98,7 +99,7 @@ internal class BankApiTest {
             .accept(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus().isOk
-            .expectBodyList(AccountDto::class.java)
+            .expectBodyList<AccountDto>()
             .hasSize(2)
     }
 
@@ -113,7 +114,7 @@ internal class BankApiTest {
             .accept(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus().isOk
-            .expectBodyList(TransactionDto::class.java)
+            .expectBodyList<TransactionDto>()
             .hasSize(2)
     }
 

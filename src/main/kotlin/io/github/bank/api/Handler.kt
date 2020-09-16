@@ -147,7 +147,7 @@ class AccountHandler(
             val payeeTransactions = transactionRepository.findAllByPayee(account.iban)
             val result = transactions.plus(payeeTransactions).sortedByDescending { it.createdAt }
 
-            ServerResponse.ok().bodyValue(result)
+            ServerResponse.ok().bodyValue(result.map { it.toDto() })
         }
 
 

@@ -1,6 +1,7 @@
 package io.github.bank.domain
 
 import io.github.bank.api.AccountDto
+import io.github.bank.api.TransactionDto
 import org.hibernate.annotations.NaturalId
 import java.math.BigDecimal
 import java.time.Instant
@@ -95,7 +96,14 @@ data class AccountTransaction(
 
     val payee: String? = null,
     val createdAt: Instant = Instant.now()
-)
+) {
+    fun toDto() = TransactionDto(
+        id = this.id,
+        amount = this.amount,
+        type = this.type,
+        payee = this.payee
+    )
+}
 
 enum class AccountTransactionType {
     DEPOSIT, WITHDRAWN, TRANSFER_IN, TRANSFER_OUT
